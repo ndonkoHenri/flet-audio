@@ -3,10 +3,10 @@ name = "audio_example"
 version = "1.0.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
-  "flet-audio @ git+https://github.com/flet-dev/flet-audio.git",
-  "flet>=0.25.2",
+  "flet-audio",
+  "flet",
 ]
 
 
@@ -28,7 +28,18 @@ copyright = "Copyright (C) 2024 by Flet"
 [tool.flet.app]
 path = "src"
 
+[tool.flet.dev_packages]
+flet-audio = "../.."
+
 [tool.uv]
 dev-dependencies = [
-    "flet[all]>=0.25.2",
+    "flet",
+    "flet-cli",
+    "flet-desktop",
 ]
+
+[tool.uv.sources]
+flet-audio = { path = "../../", editable = true }
+flet = { git = "https://github.com/flet-dev/flet", subdirectory = "sdk/python/packages/flet", rev = "v1" }
+flet-cli = { git = "https://github.com/flet-dev/flet", subdirectory = "sdk/python/packages/flet-cli", rev = "v1" }
+flet-desktop = { git = "https://github.com/flet-dev/flet", subdirectory = "sdk/python/packages/flet-desktop", rev = "v1" }
