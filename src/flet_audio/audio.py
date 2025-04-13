@@ -2,13 +2,7 @@ import asyncio
 from enum import Enum
 from typing import Optional
 
-from flet.core.control import Service, control
-from flet.core.control_event import ControlEvent
-from flet.core.types import (
-    OptionalControlEventCallable,
-    OptionalEventCallable,
-    OptionalNumber,
-)
+import flet as ft
 
 
 class ReleaseMode(Enum):
@@ -25,20 +19,20 @@ class AudioState(Enum):
     DISPOSED = "disposed"
 
 
-class AudioStateChangeEvent(ControlEvent):
+class AudioStateChangeEvent(ft.ControlEvent):
     state: AudioState
 
 
-class AudioPositionChangeEvent(ControlEvent):
+class AudioPositionChangeEvent(ft.ControlEvent):
     position: int
 
 
-class AudioDurationChangeEvent(ControlEvent):
+class AudioDurationChangeEvent(ft.ControlEvent):
     duration: int
 
 
-@control("Audio")
-class Audio(Service):
+@ft.control("Audio")
+class Audio(ft.Service):
     """
     A control to simultaneously play multiple audio files. Works on macOS, Linux, Windows, iOS, Android and web. Based on audioplayers Flutter widget (https://pub.dev/packages/audioplayers).
 
@@ -71,15 +65,15 @@ class Audio(Service):
     src: Optional[str] = None
     src_base64: Optional[str] = None
     autoplay: bool = False
-    volume: OptionalNumber = None
-    balance: OptionalNumber = None
-    playback_rate: OptionalNumber = None
+    volume: ft.OptionalNumber = None
+    balance: ft.OptionalNumber = None
+    playback_rate: ft.OptionalNumber = None
     release_mode: Optional[ReleaseMode] = None
-    on_loaded: OptionalControlEventCallable = None
-    on_duration_changed: OptionalEventCallable[AudioDurationChangeEvent] = None
-    on_state_changed: OptionalEventCallable[AudioStateChangeEvent] = None
-    on_position_changed: OptionalEventCallable[AudioPositionChangeEvent] = None
-    on_seek_complete: OptionalControlEventCallable = None
+    on_loaded: ft.OptionalControlEventCallable = None
+    on_duration_changed: ft.OptionalEventCallable[AudioDurationChangeEvent] = None
+    on_state_changed: ft.OptionalEventCallable[AudioStateChangeEvent] = None
+    on_position_changed: ft.OptionalEventCallable[AudioPositionChangeEvent] = None
+    on_seek_complete: ft.OptionalControlEventCallable = None
 
     async def play_async(self):
         await self._invoke_method_async("play")
