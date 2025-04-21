@@ -1,16 +1,5 @@
-import asyncio
-import logging
-import os
-
 import flet as ft
-
-logging.basicConfig(level=logging.INFO)
-
 import flet_audio as fta
-
-url = "https://github.com/mdn/webaudio-examples/blob/main/audio-analyser/viper.mp3?raw=true"
-
-# os.environ["FLET_PLATFORM"] = "macos"
 
 
 def main(page: ft.Page):
@@ -74,4 +63,3 @@ def main(page: ft.Page):
 
 
 ft.run(main)
-# ft.run(main, view=ft.AppView.FLET_APP, port=8550)

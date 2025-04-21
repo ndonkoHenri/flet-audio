@@ -2,12 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:collection/collection.dart';
 import 'package:flet/flet.dart';
 import 'package:flutter/foundation.dart';
 
+import 'utils/audio.dart';
+
 class AudioService extends FletService {
-  AudioService({required super.control, required super.backend});
+  AudioService({required super.control});
 
   AudioPlayer player = AudioPlayer();
   Duration? _duration;
@@ -32,15 +33,13 @@ class AudioService extends FletService {
 
     _onDurationChangedSubscription =
         player.onDurationChanged.listen((duration) {
-      backend.triggerControlEvent(
-          control, "duration_changed", {"duration": duration.inMilliseconds});
+      control.triggerEvent(
+          "duration_changed", {"duration": duration.inMilliseconds});
       _duration = duration;
     });
 
     _onStateChangedSubscription = player.onPlayerStateChanged.listen((state) {
-      debugPrint("Audio($hashCode) - state_changed: ${state.name}");
-      backend
-          .triggerControlEvent(control, "state_changed", {"state": state.name});
+      control.triggerEvent("state_changed", {"state": state.name});
     });
 
     _onPositionChangedSubscription =
@@ -53,12 +52,11 @@ class AudioService extends FletService {
       } else {
         return;
       }
-      backend.triggerControlEvent(
-          control, "position_changed", {"position": posMs});
+      control.triggerEvent("position_changed", {"position": posMs});
     });
 
     _onSeekCompleteSubscription = player.onSeekComplete.listen((event) {
-      backend.triggerControlEvent(control, "seek_complete");
+      control.triggerEvent("seek_complete");
     });
 
     update();
@@ -74,13 +72,11 @@ class AudioService extends FletService {
       throw Exception(
           "Audio must have either \"src\" or \"src_base64\" specified.");
     }
-    bool autoplay = control.getBool("autoplay", false)!;
-    double? volume = control.getDouble("volume", null);
-    double? balance = control.getDouble("balance", null);
-    double? playbackRate = control.getDouble("playback_rate", null);
-    var releaseMode = ReleaseMode.values.firstWhereOrNull((e) =>
-        e.name.toLowerCase() ==
-        control.getString("release_mode", "")!.toLowerCase());
+    var autoplay = control.getBool("autoplay", false)!;
+    var volume = control.getDouble("volume", null);
+    var balance = control.getDouble("balance", null);
+    var playbackRate = control.getDouble("playback_rate", null);
+    var releaseMode = parseReleaseMode(control.getString("release_mode"));
 
     () async {
       bool srcChanged = false;
@@ -89,7 +85,7 @@ class AudioService extends FletService {
         srcChanged = true;
 
         // URL or file?
-        var assetSrc = backend.getAssetSource(src);
+        var assetSrc = control.backend.getAssetSource(src);
         if (assetSrc.isFile) {
           await player.setSourceDeviceFile(assetSrc.path);
         } else {
@@ -102,19 +98,16 @@ class AudioService extends FletService {
       }
 
       if (srcChanged) {
-        debugPrint("Audio.srcChanged");
-        backend.triggerControlEvent(control, "loaded");
+        control.triggerEvent("loaded");
       }
 
       if (releaseMode != null && releaseMode != _releaseMode) {
-        debugPrint("Audio.setReleaseMode($releaseMode)");
         _releaseMode = releaseMode;
         await player.setReleaseMode(releaseMode);
       }
 
       if (volume != _volume && volume != null && volume >= 0 && volume <= 1) {
         _volume = volume;
-        debugPrint("Audio.setVolume($volume)");
         await player.setVolume(volume);
       }
 
@@ -123,7 +116,6 @@ class AudioService extends FletService {
           playbackRate >= 0 &&
           playbackRate <= 2) {
         _playbackRate = playbackRate;
-        debugPrint("Audio.setPlaybackRate($playbackRate)");
         await player.setPlaybackRate(playbackRate);
       }
 
@@ -133,12 +125,10 @@ class AudioService extends FletService {
           balance >= -1 &&
           balance <= 1) {
         _balance = balance;
-        debugPrint("Audio.setBalance($balance)");
         await player.setBalance(balance);
       }
 
       if (srcChanged && autoplay) {
-        debugPrint("Audio.resume($srcChanged, $autoplay)");
         await player.resume();
       }
     }();
@@ -161,12 +151,15 @@ class AudioService extends FletService {
         await player.release();
         break;
       case "seek":
-        await player.seek(Duration(milliseconds: args["position"] ?? 0));
+        final position = parseDuration(args["position"]);
+        if (position != null) {
+          await player.seek(position);
+        }
         break;
       case "get_duration":
-        return (await player.getDuration())?.inMilliseconds;
+        return await player.getDuration();
       case "get_current_position":
-        return (await player.getCurrentPosition())?.inMilliseconds;
+        return await player.getCurrentPosition();
       default:
         throw Exception("Unknown Audio method: $name");
     }

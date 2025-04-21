@@ -4,10 +4,10 @@ import 'audio.dart';
 
 class Extension extends FletExtension {
   @override
-  FletService? createService(Control control, FletBackend backend) {
+  FletService? createService(Control control) {
     switch (control.type) {
       case "Audio":
-        return AudioService(control: control, backend: backend);
+        return AudioService(control: control);
       default:
         return null;
     }

@@ -75,6 +75,10 @@ class Audio(ft.Service):
     on_position_changed: ft.OptionalEventCallable[AudioPositionChangeEvent] = None
     on_seek_complete: ft.OptionalControlEventCallable = None
 
+    def before_update(self):
+        super().before_update()
+        assert self.src or self.src_base64, "either src or src_base64 must be provided"
+
     async def play_async(self):
         await self._invoke_method_async("play")
 
@@ -99,16 +103,14 @@ class Audio(ft.Service):
     def release(self):
         asyncio.create_task(self.release_async())
 
-    async def seek_async(self, position_milliseconds: int):
-        await self._invoke_method_async("seek", {"position": position_milliseconds})
+    async def seek_async(self, position: ft.DurationValue):
+        await self._invoke_method_async("seek", {"position": position})
 
-    def seek(self, position_milliseconds: int):
-        asyncio.create_task(self.seek_async(position_milliseconds))
+    def seek(self, position: ft.DurationValue):
+        asyncio.create_task(self.seek_async(position))
 
-    async def get_duration_async(self) -> Optional[int]:
+    async def get_duration_async(self) -> Optional[ft.Duration]:
         return await self._invoke_method_async("get_duration")
 
-    async def get_current_position_async(
-        self, wait_timeout: Optional[float] = 5
-    ) -> Optional[int]:
+    async def get_current_position_async(self) -> Optional[ft.Duration]:
         return await self._invoke_method_async("get_current_position")
