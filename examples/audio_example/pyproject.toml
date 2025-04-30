@@ -3,7 +3,7 @@ name = "audio_example"
 version = "1.0.0"
 description = ""
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
   "flet-audio",
   "flet",
