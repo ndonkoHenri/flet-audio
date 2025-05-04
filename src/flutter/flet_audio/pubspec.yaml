@@ -2,7 +2,7 @@ name: flet_audio
 description: Flet Audio control
 homepage: https://flet.dev
 repository: https://github.com/flet-dev/flet-audio/src/flutter/flet_audio
-version: 0.1.0
+version: 0.2.0
 publish_to: none
 
 environment:
@@ -16,7 +16,7 @@ dependencies:
   collection: ^1.16.0
   audioplayers: ^6.4.0
 
-#  flet: ^0.70.0
+  # flet: 0.70.0
   flet:
     git:
       path: packages/flet
