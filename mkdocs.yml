@@ -125,6 +125,7 @@ plugins:
             show_category_heading: false
             show_labels: false
             show_if_no_docstring: true
+            docstring_section_style: spacy
             filters:
               - "!^_"   # Exclude private members starting with only one underscore
               - "^__"   # Include private members starting with two underscores
