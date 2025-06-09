@@ -1,7 +1,7 @@
 [project]
 name = "flet-audio"
 version = "0.2.0"
-description = "Audio control for Flet"
+description = "Eases audio integration and playback in Flet applications."
 readme = "README.md"
 authors = [
     { name = "Flet contributors", email = "hello@flet.dev" }
@@ -14,7 +14,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://flet.dev"
-Documentation = "https://flet.dev/docs/controls/audio"
+Documentation = "https://flet-dev.github.io/flet-audio"
 Repository = "https://github.com/flet-dev/flet-audio"
 Issues = "https://github.com/flet-dev/flet-audio/issues"
 

@@ -1,0 +1,28 @@
+# flet-audio
+
+[![pypi](https://img.shields.io/pypi/v/flet-audio.svg)](https://pypi.python.org/pypi/flet-audio)
+[![downloads](https://static.pepy.tech/badge/flet-audio/month)](https://pepy.tech/project/flet-audio)
+[![license](https://img.shields.io/github/license/flet-dev/flet-audio.svg)](https://github.com/flet-dev/flet-audio/blob/main/LICENSE)
+
+A Flet extension package for displaying audio animations.
+
+It is based on the [audio](https://pub.dev/packages/audio) Flutter package.
+
+## Platform Support
+
+This package supports the following platforms:
+
+| Platform | Supported |
+|----------|:---------:|
+| Windows  |     ✅     |
+| macOS    |     ✅     |
+| Linux    |     ✅     |
+| iOS      |     ✅     |
+| Android  |     ✅     |
+| Web      |     ✅     |
+
+## Example
+
+```python title="main.py"
+--8<-- "examples/audio_example/src/main.py"
+``` 
