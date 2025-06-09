@@ -2,7 +2,7 @@
 site_name: "flet-audio"
 site_url: https://flet-dev.github.io/flet-audio/
 site_author: Flet Contributors
-site_description: Eases audio integration and playback in Flet applications.
+site_description: Eases audio integration and playback in Flet apps.
 
 # Repository
 edit_uri: edit/main/docs/
@@ -75,7 +75,14 @@ extra:
 nav:
   - Getting Started: index.md
   - API Reference:
-      - Lottie: lottie.md
+      - Audio: audio.md
+      - Types:
+          - AudioState: types/audio_state.md
+          - ReleaseMode: types/release_mode.md
+          - Events:
+            - AudioDurationChangeEvent: types/audio_duration_change_event.md
+            - AudioPositionChangeEvent: types/audio_position_change_event.md
+            - AudioStateChangeEvent: types/audio_state_change_event.md
   - Changelog: changelog.md
   - License: license.md
 

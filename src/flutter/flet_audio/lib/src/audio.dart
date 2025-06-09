@@ -34,12 +34,12 @@ class AudioService extends FletService {
     _onDurationChangedSubscription =
         player.onDurationChanged.listen((duration) {
       control.triggerEvent(
-          "duration_changed", {"duration": duration.inMilliseconds});
+          "duration_change", {"duration": duration.inMilliseconds});
       _duration = duration;
     });
 
-    _onStateChangedSubscription = player.onPlayerStateChanged.listen((state) {
-      control.triggerEvent("state_changed", {"state": state.name});
+    _onStateChangedSubscription = player.onPlayerStateChanged.listen((PlayerState state) {
+      control.triggerEvent("state_change", {"state": state.name});
     });
 
     _onPositionChangedSubscription =
@@ -52,7 +52,7 @@ class AudioService extends FletService {
       } else {
         return;
       }
-      control.triggerEvent("position_changed", {"position": posMs});
+      control.triggerEvent("position_change", {"position": posMs});
     });
 
     _onSeekCompleteSubscription = player.onSeekComplete.listen((event) {
@@ -73,9 +73,9 @@ class AudioService extends FletService {
           "Audio must have either \"src\" or \"src_base64\" specified.");
     }
     var autoplay = control.getBool("autoplay", false)!;
-    var volume = control.getDouble("volume", null);
-    var balance = control.getDouble("balance", null);
-    var playbackRate = control.getDouble("playback_rate", null);
+    var volume = control.getDouble("volume", 1.0)!;
+    var balance = control.getDouble("balance", 0.0)!;
+    var playbackRate = control.getDouble("playback_rate", 1)!;
     var releaseMode = parseReleaseMode(control.getString("release_mode"));
 
     () async {
@@ -106,22 +106,18 @@ class AudioService extends FletService {
         await player.setReleaseMode(releaseMode);
       }
 
-      if (volume != _volume && volume != null && volume >= 0 && volume <= 1) {
+      if (volume != _volume && volume >= 0 && volume <= 1) {
         _volume = volume;
         await player.setVolume(volume);
       }
 
-      if (playbackRate != _playbackRate &&
-          playbackRate != null &&
-          playbackRate >= 0 &&
-          playbackRate <= 2) {
+      if (playbackRate != _playbackRate) {
         _playbackRate = playbackRate;
         await player.setPlaybackRate(playbackRate);
       }
 
       if (!kIsWeb &&
           balance != _balance &&
-          balance != null &&
           balance >= -1 &&
           balance <= 1) {
         _balance = balance;
@@ -138,7 +134,10 @@ class AudioService extends FletService {
     debugPrint("Audio.$name($args)");
     switch (name) {
       case "play":
-        await player.seek(const Duration(milliseconds: 0));
+        final position = parseDuration(args["position"]);
+        if (position != null) {
+          await player.seek(position);
+        }
         await player.resume();
         break;
       case "resume":

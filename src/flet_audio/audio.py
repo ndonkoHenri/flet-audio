@@ -3,114 +3,230 @@ from enum import Enum
 from typing import Optional
 
 import flet as ft
+from .types import (
+AudioStateChangeEvent,
+AudioPositionChangeEvent,
+AudioDurationChangeEvent,
+ReleaseMode,
+)
 
-
-class ReleaseMode(Enum):
-    RELEASE = "release"
-    LOOP = "loop"
-    STOP = "stop"
-
-
-class AudioState(Enum):
-    STOPPED = "stopped"
-    PLAYING = "playing"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    DISPOSED = "disposed"
-
-
-class AudioStateChangeEvent(ft.ControlEvent):
-    state: AudioState
-
-
-class AudioPositionChangeEvent(ft.ControlEvent):
-    position: int
-
-
-class AudioDurationChangeEvent(ft.ControlEvent):
-    duration: int
 
 
 @ft.control("Audio")
 class Audio(ft.Service):
     """
-    A control to simultaneously play multiple audio files. Works on macOS, Linux, Windows, iOS, Android and web. Based on audioplayers Flutter widget (https://pub.dev/packages/audioplayers).
+    A control to simultaneously play multiple audio sources.
 
-    Audio control is non-visual and should be added to `page.overlay` list.
+    Raises:
+        AssertionError: If both `src` and `src_base64` are `None`.
 
-    Example:
-    ```
-    import flet as ft
-
-    import flet_audio as fta
-
-    def main(page: ft.Page):
-        audio1 = fta.Audio(
-            src="https://luan.xyz/files/audio/ambient_c_motion.mp3", autoplay=True
-        )
-        page.overlay.append(audio1)
-        page.add(
-            ft.Text("This is an app with background audio."),
-            ft.ElevatedButton("Stop playing", on_click=lambda _: audio1.pause()),
-        )
-
-    ft.app(target=main)
-    ```
-
-    -----
-
-    Online docs: https://flet.dev/docs/controls/audio
+    Note:
+        This control is non-visual and should be added to `page.services` list before it can be used.
     """
 
     src: Optional[str] = None
+    """
+    The audio source. Can be a URL or a local [asset file](https://flet.dev/docs/cookbook/assets).
+
+    Note:
+        - At least one of `src` or [`src_base64`][..] must be provided, with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) is a list of supported audio formats.
+    """
+
     src_base64: Optional[str] = None
+    """
+    Sets the contents of audio file encoded in base-64 format.
+    
+    Note:
+        - At least one of [`src`][..] or `src_base64` must be provided, with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) is a list of supported audio formats.
+    """
+
     autoplay: bool = False
-    volume: ft.OptionalNumber = None
-    balance: ft.OptionalNumber = None
-    playback_rate: ft.OptionalNumber = None
-    release_mode: Optional[ReleaseMode] = None
+    """
+    Starts playing audio as soon as audio control is added to a page.
+    
+    Defaults to `False`.
+    
+    Note:
+        Autoplay works in desktop, mobile apps and Safari browser, but doesn't work in Chrome/Edge.
+    """
+
+    volume: ft.Number = 1.0
+    """
+    Sets the volume (amplitude).
+    It's value ranges between `0.0` (mute) and `1.0` (maximum volume). Intermediate values are linearly interpolated.
+    
+    Defaults to `1.0`.
+    """
+
+    balance: ft.Number = 0.0
+    """
+    Sets the stereo balance.
+
+
+    * -1 - The left channel is at full volume; the right channel is silent. 
+    * 1 - The right channel is at full volume; the left channel is silent. 
+    * 0 - Both channels are at the same volume.
+    
+    Defaults to `0.0`.
+    """
+
+    playback_rate: ft.Number = 1.0
+    """
+    Sets the playback rate. 
+    
+    Should ideally be set when creating the constructor.
+    
+    Defaults to `1.0`.
+    
+    Note: 
+        - iOS and macOS have limits between `0.5x` and `2x`. 
+        - Android SDK version should be 23 or higher.
+    """
+
+    release_mode: ReleaseMode = ReleaseMode.RELEASE
+    """
+    Sets the release mode.
+    
+    Defaults to `ReleaseMode.RELEASE`.
+    """
+
     on_loaded: ft.OptionalControlEventCallable = None
-    on_duration_changed: ft.OptionalEventCallable[AudioDurationChangeEvent] = None
-    on_state_changed: ft.OptionalEventCallable[AudioStateChangeEvent] = None
-    on_position_changed: ft.OptionalEventCallable[AudioPositionChangeEvent] = None
+    """
+    Fires when an audio is loaded/buffered.
+    """
+
+    on_duration_change: ft.OptionalEventCallable[AudioDurationChangeEvent] = None
+    """
+    Fires as soon as audio duration is available (it might take a while to download or buffer it).
+
+    Event handler argument is of type [`AudioDurationChangeEvent`][(m).types.].
+    """
+
+    on_state_change: ft.OptionalEventCallable[AudioStateChangeEvent] = None
+    """
+    Fires when audio player state changes. 
+
+    Event handler argument is of type [`AudioStateChangeEvent`][(m).types.].
+    """
+
+    on_position_change: ft.OptionalEventCallable[AudioPositionChangeEvent] = None
+    """
+    Fires when audio position is changed. 
+    Will continuously update the position of the playback every 1 second if the status is playing. 
+    
+    Can be used for a progress bar.
+
+    Event handler argument is of type [`AudioPositionChangeEvent`][(m).types.].
+    """
+
     on_seek_complete: ft.OptionalControlEventCallable = None
+    """
+    Fires on seek completions. 
+    An event is going to be sent as soon as the audio seek is finished.
+    """
+
 
     def before_update(self):
         super().before_update()
         assert self.src or self.src_base64, "either src or src_base64 must be provided"
 
-    async def play_async(self):
-        await self._invoke_method_async("play")
+    async def play_async(self, position: ft.DurationValue = ft.Duration()):
+        """
+        Starts playing audio from the specified `position`.
 
-    def play(self):
-        asyncio.create_task(self.play_async())
+        Args:
+            position: The position to start playback from.
+        """
+        await self._invoke_method_async("play", {"position": position})
+
+    def play(self, position: ft.DurationValue = ft.Duration()):
+        """
+        Starts playing audio from the specified `position`.
+
+        Args:
+            position: The position to start playback from.
+        """
+        asyncio.create_task(self.play_async(position))
 
     async def pause_async(self):
+        """
+        Pauses the audio that is currently playing.
+
+        If you call [`resume()`][.resume] or [`resume_async()`][.resume_async] later,
+        the audio will resume from the point that it has been paused.
+        """
         await self._invoke_method_async("pause")
 
     def pause(self):
+        """
+        Pauses the audio that is currently playing.
+
+        If you call [`resume()`][.resume] or [`resume_async()`][.resume_async] later,
+        the audio will resume from the point that it has been paused.
+        """
         asyncio.create_task(self.pause_async())
 
     async def resume_async(self):
+        """Resumes the audio that has been paused or stopped."""
         await self._invoke_method_async("resume")
 
     def resume(self):
+        """Resumes the audio that has been paused or stopped."""
         asyncio.create_task(self.resume_async())
 
     async def release_async(self):
+        """
+        Releases the resources associated with this media player.
+        These are going to be fetched or buffered again as soon as
+        you change the source or call [`resume()`][.resume] or [`resume_async()`][.resume_async].
+        """
         await self._invoke_method_async("release")
 
     def release(self):
+        """
+        Releases the resources associated with this media player.
+        These are going to be fetched or buffered again as soon as
+        you change the source or call [`resume()`][.resume] or [`resume_async()`][.resume_async].
+        """
         asyncio.create_task(self.release_async())
 
     async def seek_async(self, position: ft.DurationValue):
+        """
+        Moves the cursor to the desired position.
+
+        Args:
+            position: The position to seek/move to.
+        """
         await self._invoke_method_async("seek", {"position": position})
 
     def seek(self, position: ft.DurationValue):
+        """
+        Moves the cursor to the desired position.
+
+        Args:
+            position: The position to seek/move to.
+        """
         asyncio.create_task(self.seek_async(position))
 
     async def get_duration_async(self) -> Optional[ft.Duration]:
+        """
+        Get audio duration of the audio playback.
+
+        It will be available as soon as the audio duration is available
+        (it might take a while to download or buffer it if file is not local).
+
+        Returns:
+            The duration of audio playback.
+        """
         return await self._invoke_method_async("get_duration")
 
     async def get_current_position_async(self) -> Optional[ft.Duration]:
+        """
+        Get the current position of the audio playback.
+
+        Returns:
+            The current position of the audio playback.
+        """
         return await self._invoke_method_async("get_current_position")
