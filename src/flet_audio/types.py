@@ -20,7 +20,7 @@ class ReleaseMode(Enum):
         - In Android, the media player is quite resource-intensive, and this will
         let it go. Data will be buffered again when needed (if it's a remote file,
         it will be downloaded again).
-        - In iOS and macOS, works just like [`Audio.stop()`][(p).audio.stop] method.
+        - In iOS and macOS, works just like [`Audio.stop()`][(p).Audio.stop] method.
     """
 
     LOOP = "loop"

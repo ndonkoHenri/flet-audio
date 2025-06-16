@@ -6,7 +6,7 @@
 
 A Flet extension package for displaying audio animations.
 
-It is based on the [audio](https://pub.dev/packages/audio) Flutter package.
+It is based on the [audioplayers](https://pub.dev/packages/audioplayers) Flutter package.
 
 ## Platform Support
 
