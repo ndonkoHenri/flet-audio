@@ -21,6 +21,32 @@ This package supports the following platforms:
 | Android  |     ✅     |
 | Web      |     ✅     |
 
+## Usage
+
+### Installation
+
+To install the `flet-audio` package and add it to your project dependencies:
+
+=== "uv"
+
+```bash
+uv add flet-audio
+```
+
+=== "pip"
+
+```bash
+pip install flet-audio
+```
+
+    You will have to manually add this package to your `requirements.txt` or `pyproject.toml`.
+
+=== "poetry"
+
+```bash
+poetry add flet-audio
+```
+
 ## Example
 
 ```python title="main.py"

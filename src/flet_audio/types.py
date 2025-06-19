@@ -1,4 +1,5 @@
 from enum import Enum
+
 import flet as ft
 
 __all__ = [
@@ -8,6 +9,7 @@ __all__ = [
     "AudioDurationChangeEvent",
     "ReleaseMode",
 ]
+
 
 class ReleaseMode(Enum):
     """The behavior of Audio player when an audio is finished or stopped."""
@@ -55,14 +57,13 @@ class AudioState(Enum):
     """The audio player has been disposed of and should not be used anymore."""
 
 
-
-class AudioStateChangeEvent(ft.ControlEvent):
+class AudioStateChangeEvent(ft.Event[ft.EventControlType]):
     state: AudioState
 
 
-class AudioPositionChangeEvent(ft.ControlEvent):
+class AudioPositionChangeEvent(ft.Event[ft.EventControlType]):
     position: int
 
 
-class AudioDurationChangeEvent(ft.ControlEvent):
+class AudioDurationChangeEvent(ft.Event[ft.EventControlType]):
     duration: int

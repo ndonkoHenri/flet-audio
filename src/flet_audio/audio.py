@@ -1,15 +1,14 @@
 import asyncio
-from enum import Enum
 from typing import Optional
 
 import flet as ft
-from .types import (
-AudioStateChangeEvent,
-AudioPositionChangeEvent,
-AudioDurationChangeEvent,
-ReleaseMode,
-)
 
+from .types import (
+    AudioDurationChangeEvent,
+    AudioPositionChangeEvent,
+    AudioStateChangeEvent,
+    ReleaseMode,
+)
 
 
 @ft.control("Audio")
@@ -18,10 +17,10 @@ class Audio(ft.Service):
     A control to simultaneously play multiple audio sources.
 
     Raises:
-        AssertionError: If both `src` and `src_base64` are `None`.
+        AssertionError: If both [`src`][(c).] and [`src_base64`][(c).] are `None`.
 
     Note:
-        This control is non-visual and should be added to `page.services` list before it can be used.
+        This control is non-visual and should be added to `Page.services` list before it can be used.
     """
 
     src: Optional[str] = None
@@ -29,8 +28,10 @@ class Audio(ft.Service):
     The audio source. Can be a URL or a local [asset file](https://flet.dev/docs/cookbook/assets).
 
     Note:
-        - At least one of `src` or [`src_base64`][..] must be provided, with `src_base64` having priority if both are provided.
-        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) is a list of supported audio formats.
+        - At least one of `src` or [`src_base64`][..] must be provided, 
+            with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) 
+            is a list of supported audio formats.
     """
 
     src_base64: Optional[str] = None
@@ -38,15 +39,15 @@ class Audio(ft.Service):
     Sets the contents of audio file encoded in base-64 format.
     
     Note:
-        - At least one of [`src`][..] or `src_base64` must be provided, with `src_base64` having priority if both are provided.
-        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) is a list of supported audio formats.
+        - At least one of [`src`][..] or `src_base64` must be provided, 
+            with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) 
+            is a list of supported audio formats.
     """
 
     autoplay: bool = False
     """
     Starts playing audio as soon as audio control is added to a page.
-    
-    Defaults to `False`.
     
     Note:
         Autoplay works in desktop, mobile apps and Safari browser, but doesn't work in Chrome/Edge.
@@ -55,9 +56,8 @@ class Audio(ft.Service):
     volume: ft.Number = 1.0
     """
     Sets the volume (amplitude).
-    It's value ranges between `0.0` (mute) and `1.0` (maximum volume). Intermediate values are linearly interpolated.
-    
-    Defaults to `1.0`.
+    It's value ranges between `0.0` (mute) and `1.0` (maximum volume). 
+    Intermediate values are linearly interpolated.
     """
 
     balance: ft.Number = 0.0
@@ -65,11 +65,9 @@ class Audio(ft.Service):
     Sets the stereo balance.
 
 
-    * -1 - The left channel is at full volume; the right channel is silent. 
-    * 1 - The right channel is at full volume; the left channel is silent. 
-    * 0 - Both channels are at the same volume.
-    
-    Defaults to `0.0`.
+    * `-1` - The left channel is at full volume; the right channel is silent. 
+    * `1` - The right channel is at full volume; the left channel is silent. 
+    * `0` - Both channels are at the same volume.
     """
 
     playback_rate: ft.Number = 1.0
@@ -77,8 +75,6 @@ class Audio(ft.Service):
     Sets the playback rate. 
     
     Should ideally be set when creating the constructor.
-    
-    Defaults to `1.0`.
     
     Note: 
         - iOS and macOS have limits between `0.5x` and `2x`. 
@@ -88,45 +84,42 @@ class Audio(ft.Service):
     release_mode: ReleaseMode = ReleaseMode.RELEASE
     """
     Sets the release mode.
-    
-    Defaults to `ReleaseMode.RELEASE`.
     """
 
-    on_loaded: ft.OptionalControlEventCallable = None
+    on_loaded: ft.OptionalControlEventHandler["Audio"] = None
     """
     Fires when an audio is loaded/buffered.
     """
 
-    on_duration_change: ft.OptionalEventCallable[AudioDurationChangeEvent] = None
+    on_duration_change: ft.OptionalEventHandler[AudioDurationChangeEvent["Audio"]] = None
     """
     Fires as soon as audio duration is available (it might take a while to download or buffer it).
 
-    Event handler argument is of type [`AudioDurationChangeEvent`][(m).types.].
+    Event handler argument is of type [`AudioDurationChangeEvent`][(p).].
     """
 
-    on_state_change: ft.OptionalEventCallable[AudioStateChangeEvent] = None
+    on_state_change: ft.OptionalEventHandler[AudioStateChangeEvent["Audio"]] = None
     """
     Fires when audio player state changes. 
 
-    Event handler argument is of type [`AudioStateChangeEvent`][(m).types.].
+    Event handler argument is of type [`AudioStateChangeEvent`][(p).].
     """
 
-    on_position_change: ft.OptionalEventCallable[AudioPositionChangeEvent] = None
+    on_position_change: ft.OptionalEventHandler[AudioPositionChangeEvent["Audio"]] = None
     """
     Fires when audio position is changed. 
     Will continuously update the position of the playback every 1 second if the status is playing. 
     
     Can be used for a progress bar.
 
-    Event handler argument is of type [`AudioPositionChangeEvent`][(m).types.].
+    Event handler argument is of type [`AudioPositionChangeEvent`][(p).].
     """
 
-    on_seek_complete: ft.OptionalControlEventCallable = None
+    on_seek_complete: ft.OptionalControlEventHandler["Audio"] = None
     """
     Fires on seek completions. 
     An event is going to be sent as soon as the audio seek is finished.
     """
-
 
     def before_update(self):
         super().before_update()
