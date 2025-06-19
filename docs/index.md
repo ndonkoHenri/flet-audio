@@ -28,24 +28,21 @@ This package supports the following platforms:
 To install the `flet-audio` package and add it to your project dependencies:
 
 === "uv"
-
-```bash
-uv add flet-audio
-```
+    ```bash
+    uv add flet-audio
+    ```
 
 === "pip"
-
-```bash
-pip install flet-audio
-```
-
-    You will have to manually add this package to your `requirements.txt` or `pyproject.toml`.
+    ```bash
+    pip install flet-audio  # (1)!
+    ```
 
 === "poetry"
+    ```bash
+    poetry add flet-audio
+    ```
 
-```bash
-poetry add flet-audio
-```
+1. After this, you will have to manually add this package to your `requirements.txt` or `pyproject.toml`.
 
 ## Example
 
