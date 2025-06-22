@@ -132,6 +132,8 @@ class Audio(ft.Service):
         Args:
             position: The position to start playback from.
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         await self._invoke_method_async("play", {"position": position}, timeout=timeout)
 
@@ -142,6 +144,8 @@ class Audio(ft.Service):
         Args:
             position: The position to start playback from.
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         asyncio.create_task(self.play_async(position, timeout=timeout))
 
@@ -163,6 +167,8 @@ class Audio(ft.Service):
 
         Args:
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         asyncio.create_task(self.pause_async(timeout=timeout))
 
@@ -172,6 +178,8 @@ class Audio(ft.Service):
 
         Args:
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         await self._invoke_method_async("resume", timeout=timeout)
 
@@ -181,6 +189,8 @@ class Audio(ft.Service):
 
         Args:
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         asyncio.create_task(self.resume_async(timeout=timeout))
 
@@ -192,6 +202,8 @@ class Audio(ft.Service):
 
         Args:
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         await self._invoke_method_async("release", timeout=timeout)
 
@@ -203,6 +215,8 @@ class Audio(ft.Service):
 
         Args:
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         asyncio.create_task(self.release_async(timeout=timeout))
 
@@ -213,6 +227,8 @@ class Audio(ft.Service):
         Args:
             position: The position to seek/move to.
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         await self._invoke_method_async("seek", {"position": position}, timeout=timeout)
 
@@ -223,6 +239,8 @@ class Audio(ft.Service):
         Args:
             position: The position to seek/move to.
             timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
         """
         asyncio.create_task(self.seek_async(position, timeout=timeout))
 
@@ -237,6 +255,8 @@ class Audio(ft.Service):
             timeout: The maximum amount of time (in seconds) to wait for a response.
         Returns:
             The duration of audio playback.
+        Raises:
+            TimeoutError: If the request times out.
         """
         return await self._invoke_method_async("get_duration", timeout=timeout)
 

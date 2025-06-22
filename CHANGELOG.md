@@ -19,13 +19,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - `Audio` must now be added to `Page.services` instead of `Page.overlay`.
 - The following properties were renamed:
-  - `on_state_changed` → `on_state_change`
-  - `on_duration_changed` → `on_duration_change`
-  - `on_position_changed` → `on_position_change`
+    - `on_state_changed` → `on_state_change`
+    - `on_duration_changed` → `on_duration_change`
+    - `on_position_changed` → `on_position_change`
 - Method `Audio.play()` now accepts an optional `position` parameter for specifying start position.
 - The following sync methods were removed:
-  - `get_duration()` → use `get_duration_async()` instead
-  - `get_current_position()` → use `get_current_position_async()` instead
+    - `get_duration()` → use `get_duration_async()` instead
+    - `get_current_position()` → use `get_current_position_async()` instead
 
 ## [0.1.0] - 2025-01-15
 
