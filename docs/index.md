@@ -4,7 +4,7 @@
 [![downloads](https://static.pepy.tech/badge/flet-audio/month)](https://pepy.tech/project/flet-audio)
 [![license](https://img.shields.io/github/license/flet-dev/flet-audio.svg)](https://github.com/flet-dev/flet-audio/blob/main/LICENSE)
 
-A Flet extension package for displaying audio animations.
+A [Flet](https://flet.dev) extension package for displaying audio animations.
 
 It is based on the [audioplayers](https://pub.dev/packages/audioplayers) Flutter package.
 

@@ -1,29 +1,50 @@
-# Flet Audio control
+# flet-audio
 
-`Audio` control for Flet.
+[![pypi](https://img.shields.io/pypi/v/flet-audio.svg)](https://pypi.python.org/pypi/flet-audio)
+[![downloads](https://static.pepy.tech/badge/flet-audio/month)](https://pepy.tech/project/flet-audio)
+[![license](https://img.shields.io/github/license/flet-dev/flet-audio.svg)](https://github.com/flet-dev/flet-audio/blob/main/LICENSE)
 
-## Usage
+A [Flet](https://flet.dev) extension package for displaying audio animations.
 
-Add `flet-audio` as dependency (`pyproject.toml` or `requirements.txt`) to your Flet project.
+It is based on the [audioplayers](https://pub.dev/packages/audioplayers) Flutter package.
 
-## Example
+## Documentation
 
-```py
+Detailed documentation to this package can be found [here](https://flet-dev.github.io/flet-audio/).
 
-import flet as ft
+## Platform Support
 
-import flet_audio as fta
+This package supports the following platforms:
 
+| Platform | Supported |
+|----------|:---------:|
+| Windows  |     ✅     |
+| macOS    |     ✅     |
+| Linux    |     ✅     |
+| iOS      |     ✅     |
+| Android  |     ✅     |
+| Web      |     ✅     |
 
-def main(page: ft.Page):
-    audio1 = fta.Audio(
-        src="https://luan.xyz/files/audio/ambient_c_motion.mp3", autoplay=True
-    )
-    page.overlay.append(audio1)
-    page.add(
-        ft.Text("This is an app with background audio."),
-        ft.ElevatedButton("Stop playing", on_click=lambda _: audio1.pause()),
-    )
+## Installation
 
-ft.app(main)
-```
+To install the `flet-audio` package and add it to your project dependencies:
+
+- Using `uv`:
+    ```bash
+    uv add flet-audio
+    ```
+
+- Using `pip`:
+    ```bash
+    pip install flet-audio
+    ```
+    After this, you will have to manually add this package to your `requirements.txt` or `pyproject.toml`.
+
+- Using `poetry`:
+    ```bash
+    poetry add flet-audio
+    ```
+
+## Examples
+
+For examples, see [this](./examples)
