@@ -1,294 +1,272 @@
-from enum import Enum
-from typing import Any, Optional
+import asyncio
+from typing import Optional
 
-from flet.core.control import Control, OptionalNumber
-from flet.core.control_event import ControlEvent
-from flet.core.event_handler import EventHandler
-from flet.core.ref import Ref
-from flet.core.types import OptionalControlEventCallable, OptionalEventCallable
-from flet.utils import deprecated
+import flet as ft
 
-
-class ReleaseMode(Enum):
-    RELEASE = "release"
-    LOOP = "loop"
-    STOP = "stop"
+from .types import (
+    AudioDurationChangeEvent,
+    AudioPositionChangeEvent,
+    AudioStateChangeEvent,
+    ReleaseMode,
+)
 
 
-class AudioState(Enum):
-    STOPPED = "stopped"
-    PLAYING = "playing"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    DISPOSED = "disposed"
-
-
-class AudioStateChangeEvent(ControlEvent):
-    def __init__(self, e: ControlEvent):
-        super().__init__(e.target, e.name, e.data, e.control, e.page)
-        self.state: AudioState = AudioState(e.data)
-
-
-class AudioPositionChangeEvent(ControlEvent):
-    def __init__(self, e: ControlEvent):
-        super().__init__(e.target, e.name, e.data, e.control, e.page)
-        self.position: int = int(e.data)
-
-
-class AudioDurationChangeEvent(ControlEvent):
-    def __init__(self, e: ControlEvent):
-        super().__init__(e.target, e.name, e.data, e.control, e.page)
-        self.duration: int = int(e.data)
-
-
-class Audio(Control):
+@ft.control("Audio")
+class Audio(ft.Service):
     """
-    A control to simultaneously play multiple audio files. Works on macOS, Linux, Windows, iOS, Android and web. Based on audioplayers Flutter widget (https://pub.dev/packages/audioplayers).
+    A control to simultaneously play multiple audio sources.
 
-    Audio control is non-visual and should be added to `page.overlay` list.
+    Raises:
+        AssertionError: If both [`src`][(c).] and [`src_base64`][(c).] are `None`.
 
-    Example:
-    ```
-    import flet as ft
-
-    import flet_audio as fta
-
-    def main(page: ft.Page):
-        audio1 = fta.Audio(
-            src="https://luan.xyz/files/audio/ambient_c_motion.mp3", autoplay=True
-        )
-        page.overlay.append(audio1)
-        page.add(
-            ft.Text("This is an app with background audio."),
-            ft.ElevatedButton("Stop playing", on_click=lambda _: audio1.pause()),
-        )
-
-    ft.app(target=main)
-    ```
-
-    -----
-
-    Online docs: https://flet.dev/docs/controls/audio
+    Note:
+        This control is non-visual and should be added to `Page.services` list before it can be used.
     """
 
-    def __init__(
-        self,
-        src: Optional[str] = None,
-        src_base64: Optional[str] = None,
-        autoplay: Optional[bool] = None,
-        volume: OptionalNumber = None,
-        balance: OptionalNumber = None,
-        playback_rate: OptionalNumber = None,
-        release_mode: Optional[ReleaseMode] = None,
-        on_loaded: OptionalControlEventCallable = None,
-        on_duration_changed: OptionalEventCallable[AudioDurationChangeEvent] = None,
-        on_state_changed: OptionalEventCallable[AudioStateChangeEvent] = None,
-        on_position_changed: OptionalEventCallable[AudioPositionChangeEvent] = None,
-        on_seek_complete: OptionalControlEventCallable = None,
-        #
-        # Control
-        #
-        ref: Optional[Ref] = None,
-        data: Any = None,
-    ):
-        Control.__init__(
-            self,
-            ref=ref,
-            data=data,
-        )
+    src: Optional[str] = None
+    """
+    The audio source. Can be a URL or a local [asset file](https://flet.dev/docs/cookbook/assets).
 
-        self.__on_state_changed = EventHandler(lambda e: AudioStateChangeEvent(e))
-        self._add_event_handler("state_changed", self.__on_state_changed.get_handler())
+    Note:
+        - At least one of `src` or [`src_base64`][..] must be provided, 
+            with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) 
+            is a list of supported audio formats.
+    """
 
-        self.__on_position_changed = EventHandler(lambda e: AudioPositionChangeEvent(e))
-        self._add_event_handler(
-            "position_changed", self.__on_position_changed.get_handler()
-        )
+    src_base64: Optional[str] = None
+    """
+    Sets the contents of audio file encoded in base-64 format.
+    
+    Note:
+        - At least one of [`src`][..] or `src_base64` must be provided, 
+            with `src_base64` having priority if both are provided.
+        - [Here](https://github.com/bluefireteam/audioplayers/blob/main/troubleshooting.md#supported-formats--encodings) 
+            is a list of supported audio formats.
+    """
 
-        self.__on_duration_changed = EventHandler(lambda e: AudioDurationChangeEvent(e))
-        self._add_event_handler(
-            "duration_changed", self.__on_duration_changed.get_handler()
-        )
+    autoplay: bool = False
+    """
+    Starts playing audio as soon as audio control is added to a page.
+    
+    Note:
+        Autoplay works in desktop, mobile apps and Safari browser, but doesn't work in Chrome/Edge.
+    """
 
-        self.src = src
-        self.src_base64 = src_base64
-        self.autoplay = autoplay
-        self.volume = volume
-        self.balance = balance
-        self.playback_rate = playback_rate
-        self.release_mode = release_mode
-        self.on_loaded = on_loaded
-        self.on_duration_changed = on_duration_changed
-        self.on_state_changed = on_state_changed
-        self.on_position_changed = on_position_changed
-        self.on_seek_complete = on_seek_complete
+    volume: ft.Number = 1.0
+    """
+    Sets the volume (amplitude).
+    It's value ranges between `0.0` (mute) and `1.0` (maximum volume). 
+    Intermediate values are linearly interpolated.
+    """
 
-    def _get_control_name(self):
-        return "audio"
+    balance: ft.Number = 0.0
+    """
+    Sets the stereo balance.
 
-    def play(self):
-        self.invoke_method("play")
 
-    def pause(self):
-        self.invoke_method("pause")
+    * `-1` - The left channel is at full volume; the right channel is silent. 
+    * `1` - The right channel is at full volume; the left channel is silent. 
+    * `0` - Both channels are at the same volume.
+    """
 
-    def resume(self):
-        self.invoke_method("resume")
+    playback_rate: ft.Number = 1.0
+    """
+    Sets the playback rate. 
+    
+    Should ideally be set when creating the constructor.
+    
+    Note: 
+        - iOS and macOS have limits between `0.5x` and `2x`. 
+        - Android SDK version should be 23 or higher.
+    """
 
-    def release(self):
-        self.invoke_method("release")
+    release_mode: ReleaseMode = ReleaseMode.RELEASE
+    """
+    Sets the release mode.
+    """
 
-    def seek(self, position_milliseconds: int):
-        self.invoke_method("seek", {"position": str(position_milliseconds)})
+    on_loaded: ft.OptionalControlEventHandler["Audio"] = None
+    """
+    Fires when an audio is loaded/buffered.
+    """
 
-    def get_duration(self, wait_timeout: Optional[float] = 5) -> Optional[int]:
-        sr = self.invoke_method(
-            "get_duration",
-            wait_for_result=True,
-            wait_timeout=wait_timeout,
-        )
-        return int(sr) if sr else None
+    on_duration_change: ft.OptionalEventHandler[AudioDurationChangeEvent["Audio"]] = None
+    """
+    Fires as soon as audio duration is available (it might take a while to download or buffer it).
 
-    async def get_duration_async(
-        self, wait_timeout: Optional[float] = 5
-    ) -> Optional[int]:
-        sr = await self.invoke_method_async(
-            "get_duration",
-            wait_for_result=True,
-            wait_timeout=wait_timeout,
-        )
-        return int(sr) if sr else None
+    Event handler argument is of type [`AudioDurationChangeEvent`][(p).].
+    """
 
-    def get_current_position(self, wait_timeout: Optional[float] = 5) -> Optional[int]:
-        sr = self.invoke_method(
-            "get_current_position",
-            wait_for_result=True,
-            wait_timeout=wait_timeout,
-        )
-        return int(sr) if sr else None
+    on_state_change: ft.OptionalEventHandler[AudioStateChangeEvent["Audio"]] = None
+    """
+    Fires when audio player state changes. 
 
-    async def get_current_position_async(
-        self, wait_timeout: Optional[float] = 5
-    ) -> Optional[int]:
-        sr = await self.invoke_method_async(
-            "get_current_position",
-            wait_for_result=True,
-            wait_timeout=wait_timeout,
-        )
-        return int(sr) if sr else None
+    Event handler argument is of type [`AudioStateChangeEvent`][(p).].
+    """
 
-    # src
-    @property
-    def src(self):
-        return self._get_attr("src")
+    on_position_change: ft.OptionalEventHandler[AudioPositionChangeEvent["Audio"]] = None
+    """
+    Fires when audio position is changed. 
+    Will continuously update the position of the playback every 1 second if the status is playing. 
+    
+    Can be used for a progress bar.
 
-    @src.setter
-    def src(self, value):
-        self._set_attr("src", value)
+    Event handler argument is of type [`AudioPositionChangeEvent`][(p).].
+    """
 
-    # src_base64
-    @property
-    def src_base64(self):
-        return self._get_attr("srcBase64")
+    on_seek_complete: ft.OptionalControlEventHandler["Audio"] = None
+    """
+    Fires on seek completions. 
+    An event is going to be sent as soon as the audio seek is finished.
+    """
 
-    @src_base64.setter
-    def src_base64(self, value):
-        self._set_attr("srcBase64", value)
+    def before_update(self):
+        super().before_update()
+        assert self.src or self.src_base64, "either src or src_base64 must be provided"
 
-    # autoplay
-    @property
-    def autoplay(self) -> bool:
-        return self._get_attr("autoplay", data_type="bool", def_value=False)
+    async def play_async(self, position: ft.DurationValue = ft.Duration(), timeout: Optional[float] = 10):
+        """
+        Starts playing audio from the specified `position`.
 
-    @autoplay.setter
-    def autoplay(self, value: Optional[bool]):
-        self._set_attr("autoplay", value)
+        Args:
+            position: The position to start playback from.
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        await self._invoke_method_async("play", {"position": position}, timeout=timeout)
 
-    # volume
-    @property
-    def volume(self) -> OptionalNumber:
-        return self._get_attr("volume")
+    def play(self, position: ft.DurationValue = ft.Duration(), timeout: Optional[float] = 10):
+        """
+        Starts playing audio from the specified `position`.
 
-    @volume.setter
-    def volume(self, value: OptionalNumber):
-        if value is None or (0 <= value <= 1):
-            self._set_attr("volume", value)
+        Args:
+            position: The position to start playback from.
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        asyncio.create_task(self.play_async(position, timeout=timeout))
 
-    # balance
-    @property
-    def balance(self) -> OptionalNumber:
-        return self._get_attr("balance")
+    async def pause_async(self, timeout: Optional[float] = 10):
+        """
+        Pauses the audio that is currently playing.
 
-    @balance.setter
-    def balance(self, value: OptionalNumber):
-        if value is None or (-1 <= value <= 1):
-            self._set_attr("balance", value)
+        If you call [`resume()`][.resume] or [`resume_async()`][.resume_async] later,
+        the audio will resume from the point that it has been paused.
+        """
+        await self._invoke_method_async("pause", timeout=timeout)
 
-    # playback_rate
-    @property
-    def playback_rate(self) -> OptionalNumber:
-        return self._get_attr("playbackRate")
+    def pause(self, timeout: Optional[float] = 10):
+        """
+        Pauses the audio that is currently playing.
 
-    @playback_rate.setter
-    def playback_rate(self, value: OptionalNumber):
-        if value is None or (0 <= value <= 2):
-            self._set_attr("playbackRate", value)
+        If you call [`resume()`][.resume] or [`resume_async()`][.resume_async] later,
+        the audio will resume from the point that it has been paused.
 
-    # release_mode
-    @property
-    def release_mode(self):
-        return self._get_attr("releaseMode")
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        asyncio.create_task(self.pause_async(timeout=timeout))
 
-    @release_mode.setter
-    def release_mode(self, value: Optional[ReleaseMode]):
-        self._set_enum_attr("releaseMode", value, ReleaseMode)
+    async def resume_async(self, timeout: Optional[float] = 10):
+        """
+        Resumes the audio that has been paused or stopped.
 
-    # on_loaded
-    @property
-    def on_loaded(self):
-        return self._get_event_handler("loaded")
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        await self._invoke_method_async("resume", timeout=timeout)
 
-    @on_loaded.setter
-    def on_loaded(self, handler: OptionalControlEventCallable):
-        self._add_event_handler("loaded", handler)
+    def resume(self, timeout: Optional[float] = 10):
+        """
+        Resumes the audio that has been paused or stopped.
 
-    # on_duration_changed
-    @property
-    def on_duration_changed(self):
-        return self.__on_duration_changed.handler
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        asyncio.create_task(self.resume_async(timeout=timeout))
 
-    @on_duration_changed.setter
-    def on_duration_changed(
-        self, handler: OptionalEventCallable[AudioDurationChangeEvent]
-    ):
-        self.__on_duration_changed.handler = handler
+    async def release_async(self, timeout: Optional[float] = 10):
+        """
+        Releases the resources associated with this media player.
+        These are going to be fetched or buffered again as soon as
+        you change the source or call [`resume()`][.resume] or [`resume_async()`][.resume_async].
 
-    # on_state_changed
-    @property
-    def on_state_changed(self):
-        return self.__on_state_changed.handler
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        await self._invoke_method_async("release", timeout=timeout)
 
-    @on_state_changed.setter
-    def on_state_changed(self, handler: OptionalEventCallable[AudioStateChangeEvent]):
-        self.__on_state_changed.handler = handler
+    def release(self, timeout: Optional[float] = 10):
+        """
+        Releases the resources associated with this media player.
+        These are going to be fetched or buffered again as soon as
+        you change the source or call [`resume()`][.resume] or [`resume_async()`][.resume_async].
 
-    # on_position_changed
-    @property
-    def on_position_changed(self):
-        return self.__on_position_changed.handler
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        asyncio.create_task(self.release_async(timeout=timeout))
 
-    @on_position_changed.setter
-    def on_position_changed(
-        self, handler: OptionalEventCallable[AudioPositionChangeEvent]
-    ):
-        self.__on_position_changed.handler = handler
-        self._set_attr("onPositionChanged", True if handler is not None else None)
+    async def seek_async(self, position: ft.DurationValue, timeout: Optional[float] = 10):
+        """
+        Moves the cursor to the desired position.
 
-    # on_seek_complete
-    @property
-    def on_seek_complete(self):
-        return self._get_event_handler("seek_complete")
+        Args:
+            position: The position to seek/move to.
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        await self._invoke_method_async("seek", {"position": position}, timeout=timeout)
 
-    @on_seek_complete.setter
-    def on_seek_complete(self, handler: OptionalControlEventCallable):
-        self._add_event_handler("seek_complete", handler)
+    def seek(self, position: ft.DurationValue, timeout: Optional[float] = 10):
+        """
+        Moves the cursor to the desired position.
+
+        Args:
+            position: The position to seek/move to.
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        asyncio.create_task(self.seek_async(position, timeout=timeout))
+
+    async def get_duration_async(self, timeout: Optional[float] = 10) -> Optional[ft.Duration]:
+        """
+        Get audio duration of the audio playback.
+
+        It will be available as soon as the audio duration is available
+        (it might take a while to download or buffer it if file is not local).
+
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Returns:
+            The duration of audio playback.
+        Raises:
+            TimeoutError: If the request times out.
+        """
+        return await self._invoke_method_async("get_duration", timeout=timeout)
+
+    async def get_current_position_async(self, timeout: Optional[float] = 10) -> Optional[ft.Duration]:
+        """
+        Get the current position of the audio playback.
+
+        Args:
+            timeout: The maximum amount of time (in seconds) to wait for a response.
+        Returns:
+            The current position of the audio playback.
+        """
+        return await self._invoke_method_async("get_current_position", timeout=timeout)

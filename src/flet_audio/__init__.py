@@ -1,5 +1,5 @@
-from flet_audio.audio import (
-    Audio,
+from .audio import Audio
+from .types import (
     AudioDurationChangeEvent,
     AudioPositionChangeEvent,
     AudioState,

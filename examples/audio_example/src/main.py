@@ -1,26 +1,19 @@
 import flet as ft
-
 import flet_audio as fta
-
-url = "https://github.com/mdn/webaudio-examples/blob/main/audio-analyser/viper.mp3?raw=true"
 
 
 def main(page: ft.Page):
     def volume_down(_):
         audio1.volume -= 0.1
-        audio1.update()
 
     def volume_up(_):
         audio1.volume += 0.1
-        audio1.update()
 
     def balance_left(_):
         audio1.balance -= 0.1
-        audio1.update()
 
     def balance_right(_):
         audio1.balance += 0.1
-        audio1.update()
 
     audio1 = fta.Audio(
         src=url,
@@ -28,14 +21,26 @@ def main(page: ft.Page):
         volume=1,
         balance=0,
         on_loaded=lambda _: print("Loaded"),
-        on_duration_changed=lambda e: print("Duration changed:", e.data),
-        on_position_changed=lambda e: print("Position changed:", e.data),
-        on_state_changed=lambda e: print("State changed:", e.data),
+        on_duration_changed=lambda e: print("Duration changed:", e.duration),
+        on_position_changed=lambda e: print("Position changed:", e.position),
+        on_state_changed=lambda e: print("State changed:", e.state),
         on_seek_complete=lambda _: print("Seek complete"),
     )
-    page.overlay.append(audio1)
+    page.services.append(audio1)
+
+    async def on_play(e):
+        await audio1.play_async()
+
+    async def on_get_duration(e):
+        duration = await audio1.get_duration_async()
+        print("Duration:", duration)
+
+    async def on_get_current_position(e):
+        position = await audio1.get_current_position_async()
+        print("Current position:", position)
+
     page.add(
-        ft.ElevatedButton("Play", on_click=lambda _: audio1.play()),
+        ft.ElevatedButton("Play", on_click=on_play),
         ft.ElevatedButton("Pause", on_click=lambda _: audio1.pause()),
         ft.ElevatedButton("Resume", on_click=lambda _: audio1.resume()),
         ft.ElevatedButton("Release", on_click=lambda _: audio1.release()),
@@ -52,16 +57,9 @@ def main(page: ft.Page):
                 ft.ElevatedButton("Balance right", on_click=balance_right),
             ]
         ),
-        ft.ElevatedButton(
-            "Get duration", on_click=lambda _: print("Duration:", audio1.get_duration())
-        ),
-        ft.ElevatedButton(
-            "Get current position",
-            on_click=lambda _: print(
-                "Current position:", audio1.get_current_position()
-            ),
-        ),
+        ft.ElevatedButton("Get duration", on_click=on_get_duration),
+        ft.ElevatedButton("Get current position", on_click=on_get_current_position),
     )
 
 
-ft.app(main)
+ft.run(main)
