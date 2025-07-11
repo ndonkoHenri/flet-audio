@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from enum import Enum
 
 import flet as ft
@@ -19,10 +20,10 @@ class ReleaseMode(Enum):
     Releases all resources, just like calling release method.
 
     Info:
-        - In Android, the media player is quite resource-intensive, and this will
+        - On Android, the media player is quite resource-intensive, and this will
         let it go. Data will be buffered again when needed (if it's a remote file,
         it will be downloaded again).
-        - In iOS and macOS, works just like [`Audio.stop()`][(p).Audio.stop] method.
+        - On iOS and macOS, works just like [`Audio.release()`][(p).Audio.release] method.
     """
 
     LOOP = "loop"
@@ -41,6 +42,7 @@ class ReleaseMode(Enum):
 
 class AudioState(Enum):
     """The state of the audio player."""
+
     STOPPED = "stopped"
     """The audio player is stopped."""
 
@@ -57,13 +59,31 @@ class AudioState(Enum):
     """The audio player has been disposed of and should not be used anymore."""
 
 
+@dataclass
 class AudioStateChangeEvent(ft.Event[ft.EventControlType]):
+    """
+    Event triggered when the audio playback state changes.
+    """
+
     state: AudioState
+    """The current state of the audio player."""
 
 
+@dataclass
 class AudioPositionChangeEvent(ft.Event[ft.EventControlType]):
+    """
+    Event triggered when the audio playback position changes.
+    """
+
     position: int
+    """The current playback position in milliseconds."""
 
 
+@dataclass
 class AudioDurationChangeEvent(ft.Event[ft.EventControlType]):
-    duration: int
+    """
+    Event triggered when the audio duration changes.
+    """
+
+    duration: ft.Duration
+    """The duration of the audio."""
