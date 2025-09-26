@@ -89,7 +89,7 @@ select = [
     "I"
 ]
 preview = true
-pydocstyle = { convention = 'google' }
+pydocstyle = { convention = 'numpy' }
 
 [tool.ruff.format]
 quote-style = "double"
